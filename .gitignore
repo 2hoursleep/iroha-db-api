@@ -6,6 +6,12 @@ __pycache__/
 # C extensions
 *.so
 
+# Keys
+
+/keys
+/iroha
+
+
 # Distribution / packaging
 .Python
 build/
