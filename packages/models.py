@@ -1,5 +1,7 @@
 from sqlalchemy import Column, String, Integer, DateTime
 import datetime
+
+from sqlalchemy.util.langhelpers import dictlike_iteritems
 from .db import db, session, base
 from sqlalchemy.dialects.postgresql.json import JSONB
 from dataclasses import dataclass
@@ -9,26 +11,30 @@ from dataclasses import dataclass
 class Block_V1(base):
     __tablename__ = "iroha_blocks"
 
-    block_hash = Column(String, primary_key=True)
-    height = Column(Integer)
-    payload = Column(JSONB)
-    tx_number = Column(Integer)
+    prev_block_hash = Column(String)
+    height = Column(Integer, primary_key=True)
     added_on = Column(DateTime)
+    created_time = Column(String)
+    signatures = Column(JSONB)
+    rejected_transactions_hashes = Column(JSONB)
+    transactions = Column(JSONB)
 
-    def __init__(self, block_hash: str, height: int, payload: JSONB, tx_number: int):
-        self.block_hash = block_hash
+    def __init__(self, prev_block_hash: str, created_time: str ,height: int, transactions: JSONB, rejected_transactions_hashes: JSONB, signatures: JSONB) -> dict:
+        self.prev_block_hash = prev_block_hash
         self.height = height
-        self.payload = payload
-        self.tx_number = tx_number
+        self.created_time = created_time
+        self.transactions = transactions
+        self.rejected_transactions_hashes = rejected_transactions_hashes
+        self.signatures = signatures
         self.added_on = datetime.datetime.now()
 
     def __repr__(self):
-        return f"<id: Block Hash: {self.block_hash} added \nHeight {self.height}"
+        return f"<id: Block Hash: {self.prev_block_hash} added \nHeight {self.height}"
 
     @staticmethod
-    def add_block(block_hash, height, payload, tx_number):
-        # check whether auth token has been blacklisted
-        block = Block_V1(block_hash, height, payload, tx_number)
+    def add_block(prev_block_hash, created_time ,height, transactions, rejected_transactions_hashes, signatures):
+        # add Iroha block to database
+        block = Block_V1(prev_block_hash, created_time ,height, transactions, rejected_transactions_hashes, signatures)
         session.add(block)
         session.commit()
 
