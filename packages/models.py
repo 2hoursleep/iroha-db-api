@@ -35,14 +35,22 @@ class Block_V1(base):
     def add_block(prev_block_hash, created_time ,height, transactions, rejected_transactions_hashes, signatures):
         # add Iroha block to database
         block = Block_V1(prev_block_hash, created_time ,height, transactions, rejected_transactions_hashes, signatures)
-        session.add(block)
-        session.commit()
+        
+        try:
+            session.add(block)
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     @staticmethod
     def get_block_by_height(height: int = 1,):
         # check whether auth token has been blacklisted
         block = session.query(Block_V1).filter_by(height=height)
         return block.__dict__
+
 
     @staticmethod
     def get_block_by_hash(block_hash):
@@ -51,9 +59,10 @@ class Block_V1(base):
         return block.__dict__
 
     @staticmethod
-    def get_tx_by_command(command: str):
+    def get_last_block():
         # check whether auth token has been blacklisted
-        block = session.query(Block_V1).filter_by(height=command)
+        block = session.query(Block_V1).order_by(Block_V1.height.desc()).first()
+        print(block.height)
         return block.__dict__
 
 
