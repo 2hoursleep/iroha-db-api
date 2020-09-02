@@ -7,9 +7,10 @@ __pycache__/
 *.so
 
 # Keys
-
+/backup
 /keys
 /iroha
+/scripts
 
 
 # Distribution / packaging

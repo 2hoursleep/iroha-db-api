@@ -1,7 +1,5 @@
 from sqlalchemy import Column, String, Integer, DateTime
 import datetime
-
-from sqlalchemy.util.langhelpers import dictlike_iteritems
 from .db import db, session, base
 from sqlalchemy.dialects.postgresql.json import JSONB
 from dataclasses import dataclass
@@ -19,7 +17,15 @@ class Block_V1(base):
     rejected_transactions_hashes = Column(JSONB)
     transactions = Column(JSONB)
 
-    def __init__(self, prev_block_hash: str, created_time: str ,height: int, transactions: JSONB, rejected_transactions_hashes: JSONB, signatures: JSONB) -> dict:
+    def __init__(
+        self,
+        prev_block_hash: str,
+        created_time: str,
+        height: int,
+        transactions: JSONB,
+        rejected_transactions_hashes: JSONB,
+        signatures: JSONB,
+    ) -> dict:
         self.prev_block_hash = prev_block_hash
         self.height = height
         self.created_time = created_time
@@ -32,10 +38,24 @@ class Block_V1(base):
         return f"<id: Block Hash: {self.prev_block_hash} added \nHeight {self.height}"
 
     @staticmethod
-    def add_block(prev_block_hash, created_time ,height, transactions, rejected_transactions_hashes, signatures):
+    def add_block(
+        prev_block_hash,
+        created_time,
+        height,
+        transactions,
+        rejected_transactions_hashes,
+        signatures,
+    ):
         # add Iroha block to database
-        block = Block_V1(prev_block_hash, created_time ,height, transactions, rejected_transactions_hashes, signatures)
-        
+        block = Block_V1(
+            prev_block_hash,
+            created_time,
+            height,
+            transactions,
+            rejected_transactions_hashes,
+            signatures,
+        )
+
         try:
             session.add(block)
             session.commit()
@@ -46,11 +66,12 @@ class Block_V1(base):
             session.close()
 
     @staticmethod
-    def get_block_by_height(height: int = 1,):
+    def get_block_by_height(
+        height: int = 1,
+    ):
         # check whether auth token has been blacklisted
         block = session.query(Block_V1).filter_by(height=height)
         return block.__dict__
-
 
     @staticmethod
     def get_block_by_hash(block_hash):

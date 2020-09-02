@@ -1,7 +1,9 @@
-#add huey or mini huey
+# add huey or mini huey
 
 
-from gevent import monkey; monkey.patch_all()
+from gevent import monkey
+
+monkey.patch_all()
 import gevent
 
 from huey.contrib.mini import MiniHuey

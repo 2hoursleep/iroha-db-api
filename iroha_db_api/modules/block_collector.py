@@ -1,6 +1,4 @@
 import binascii
-
-from binascii import Error
 import json
 import pprint
 import iroha.primitive_pb2 as iroha_primitive
@@ -10,7 +8,7 @@ from iroha import Iroha, IrohaGrpc
 from iroha import IrohaCrypto as ic
 
 
-class IrohaBlockAPI(object):
+class IrohaBlockClient:
     def __init__(self, creator_account, private_key, iroha_host):
         self.creator_account = creator_account
         self.iroha = Iroha(creator_account)
