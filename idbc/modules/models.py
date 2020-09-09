@@ -3,6 +3,10 @@ import datetime
 from .db import db, session, base
 from sqlalchemy.dialects.postgresql.json import JSONB
 from dataclasses import dataclass
+from . import _print, click
+import sys
+from ._docker import start_postgres_docker
+import time
 
 
 @dataclass
@@ -68,10 +72,16 @@ class Block_V1(base):
     @staticmethod
     def get_block_by_height(
         height: int = 1,
-    ):
-        # check whether auth token has been blacklisted
-        block = session.query(Block_V1).filter_by(height=height)
-        return block.__dict__
+    ) -> dict:
+        "Get Iroha block from database by height"
+        block_result = {}
+        try:
+            block = session.query(Block_V1).filter_by(height=height)
+            block_result = block.__dict__
+        except:
+            _print("No Block Found")
+        finally:
+            return block_result
 
     @staticmethod
     def get_block_by_hash(block_hash):
@@ -82,9 +92,34 @@ class Block_V1(base):
     @staticmethod
     def get_last_block():
         # check whether auth token has been blacklisted
-        block = session.query(Block_V1).order_by(Block_V1.height.desc()).first()
-        print(block.height)
-        return block.__dict__
+        "Get Iroha block from database by height"
+        block_result = {}
+        try:
+            block = block = (
+                session.query(Block_V1).order_by(Block_V1.height.desc()).first()
+            )
+            block_result = block.__dict__
+        except:
+            raise
+        finally:
+            return block_result
 
 
-base.metadata.create_all(db)
+try:
+    base.metadata.create_all(db)
+except:
+    _print("[bold red]Could not connect to DB")
+    user_choice = click.prompt(
+        "Do you want to start a Docker Services locally? \nThis uses the docker-compose file located locally. [Y/n]",
+        show_choices=["Y", "n"],
+    )
+    if str(user_choice).upper() == "Y":
+        start_postgres_docker()
+        _print(
+            "[bold green]Started Postgres & Redis. \nPlease Restart CLi[/bold green]"
+        )
+        time.sleep(15)
+        sys.exit()
+    else:
+        _print("[bold red]\nPlease check DB and Redis config[/bold red]")
+    sys.exit()

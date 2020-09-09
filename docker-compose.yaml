@@ -1,0 +1,20 @@
+version: '3.5'
+
+services:
+  iroha-block-db:
+    image: postgres
+    container_name: iroha-block-db
+    volumes: 
+      - iroha-db-block-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=docker
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=iroha_blocks_db
+    network_mode: host
+    expose:
+    - "5433"
+    ports:
+    - "5433:5433"
+    logging:
+      driver: none
+    command: -p 5433

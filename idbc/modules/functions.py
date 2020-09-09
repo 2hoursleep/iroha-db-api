@@ -4,6 +4,7 @@ from .cronjob import huey
 from . import _print
 import os
 import json
+from rich.progress import Progress
 
 
 class IrohaBlockAPI:
@@ -93,6 +94,7 @@ class IrohaBlockAPI:
             if last_height:
                 self.block_parser(last_height, scan_range)
         except:
+            _print(f"[bold red]Unable to get block from db[/bold red]")
             raise
         finally:
             huey.stop()
@@ -100,14 +102,11 @@ class IrohaBlockAPI:
     def block_parser(self, last_height: int, scan_range: int = 100):
         curent_height = last_height + 1
         end_height = curent_height + scan_range
-        while curent_height < end_height:
-            if self.test_block_height(curent_height):
-                self.parse_iroha_blocks_to_db(height=curent_height)
-                curent_height += 1
-                _print(f"[bold yellow]Parsed block {curent_height}[/bold yellow]")
-            else:
-                break
-        _print(f"[bold green]Finished parsing {curent_height}[/bold green]")
+        while self.test_block_height(curent_height):
+            self.parse_iroha_blocks_to_db(height=curent_height)
+            curent_height += 1
+        else:
+            _print(f"[bold green]Finished parsing\nLast Block no: {curent_height}[/bold green]")
 
     def test_block_height(self, height: int = 2):
         """
@@ -121,8 +120,6 @@ class IrohaBlockAPI:
                 block["blockResponse"]["block"]["blockV1"]["payload"]["height"]
             )
             assert block_height == height
-            _print(f"[bold]Block No: {block_height} was found[/bold]")
             return True
         except:
-            _print(f"[bold red]Block No: {height} does not exist[/bold red]")
             return False

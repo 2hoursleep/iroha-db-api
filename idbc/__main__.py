@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from modules.functions import IrohaBlockAPI
 from modules import click, _print
+from modules.menu_text import menu_text, welcome_msg
 import os
 
 
@@ -34,6 +35,7 @@ def cli():
 )
 def main(account_id, iroha_host, private_key):
     "Command Line Interface for Block DB API"
+    _print(welcome_msg)
     if not account_id:
         account_id = click.prompt("Please enter the API AccountID e.g. admin@test")
     if not private_key:
@@ -48,7 +50,6 @@ def main(account_id, iroha_host, private_key):
     # parse blocks once - checks if blocks exists if none runs test
     # runs backround task for parsing blocks & servering rest api
     # export data by range to json file
-    _print(f"Welcome to Iroha Block DB API")
     try:
         iroha_api = IrohaBlockAPI(
             api_user=account_id, private_key=private_key, iroha_host=iroha_host
@@ -57,11 +58,12 @@ def main(account_id, iroha_host, private_key):
         main_menu(iroha_api, cli_active)
     except:
         _print("Something went wrong")
+        raise
 
 
 def main_menu(iroha_api, cli_active):
     while cli_active:
-        _print(f"Main Menu")
+        _print(menu_text)
         user_choice = click.prompt(
             "Please Select Your Option", show_choices=["1", "2", "3"]
         )

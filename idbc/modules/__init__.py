@@ -9,4 +9,4 @@ style = "bold on black"
 
 def _print(msg):
     # panel = Panel(f"{msg}", style="bold white on red", expand=False)
-    return console.print(f"{msg}", style=style, justify="center")
+    return console.print(f"{msg}", style=style, justify="left")
