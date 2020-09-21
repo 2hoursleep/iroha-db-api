@@ -1,0 +1,24 @@
+version: '3.5'
+services:
+  api:
+    volumes:
+      - ./iroha_db_api:/app
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=manage.py
+      - FLASK_DEBUG=1
+      - IROHA_ACCOUNT_ID=admin@test
+      - IROHA_HOST=localhost:50051
+      - 'RUN=flask run --host=0.0.0.0 --port=5000'
+    command: flask run --host=0.0.0.0 --port=5000
+    # Infinite loop, to keep it alive, for debugging
+    # command: bash -c "while true; do echo 'sleeping...' && sleep 10; done"
+  worker:
+    volumes:
+      - ./iroha_db_api:/app
+    environment:
+      - IROHA_DB_CRON=2
+      - IROHA_ACCOUNT_ID=admin@test
+      - IROHA_HOST=localhost:50051
+    command: python3 manage.py worker

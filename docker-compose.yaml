@@ -1,7 +1,19 @@
 version: '3.5'
 
 services:
-  iroha-block-db:
+  api:
+    image: iroha_db_api
+    network_mode: host
+    container_name: iroha-db-api
+    depends_on:
+      - db
+  worker:
+    image: iroha_db_api
+    network_mode: host
+    container_name: iroha-db-worker
+    depends_on:
+      - db
+  db:
     image: postgres
     container_name: iroha-block-db
     volumes: 
@@ -18,3 +30,6 @@ services:
     logging:
       driver: none
     command: -p 5433
+
+volumes:
+  iroha-db-block-data:

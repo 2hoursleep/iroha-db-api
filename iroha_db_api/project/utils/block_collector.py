@@ -1,11 +1,19 @@
+# Copyright 2020 by Farren Jackson, Distributed Ledger Solutions ZA.
+# All rights reserved.
+# This file is part of the Iroha Database API & CLI Tool,
+# and is released under the "MIT License Agreement". Please see the LICENSE
+# file that should have been included as part of this package.
+
 import binascii
 import json
 import pprint
+
 import iroha.primitive_pb2 as iroha_primitive
 import iroha.queries_pb2 as queries_pb2
 from google.protobuf.json_format import MessageToDict, MessageToJson, ParseDict
-from iroha import Iroha, IrohaGrpc
+from iroha import Iroha
 from iroha import IrohaCrypto as ic
+from iroha import IrohaGrpc
 
 
 class IrohaBlockClient:
@@ -56,17 +64,6 @@ class IrohaBlockClient:
         self.ic.sign_query(query, self.user_private_key)
         for block in self.net.send_blocks_stream_query(query):
             pprint("The next block arrived: {}".format(MessageToDict(block)), indent=1)
-
-    def seed_tx(self, account_id, key, value):
-        tx = self.iroha.transaction(
-            [
-                self.iroha.command(
-                    "SetAccountDetail", account_id=account_id, key=key, value=value
-                )
-            ]
-        )
-        ic.sign_transaction(tx, self.user_private_key)
-        self.submit_transaction(tx)
 
     def get_blocks(self, height=1):
         """

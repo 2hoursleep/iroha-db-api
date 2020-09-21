@@ -1,7 +1,8 @@
+import os
+
+import click
 from rich.console import Console
 from rich.panel import Panel
-import click
-import os
 
 console = Console()
 style = "bold on black"

@@ -1,3 +1,9 @@
+# Copyright 2020 by Farren Jackson, Distributed Ledger Solutions ZA.
+# All rights reserved.
+# This file is part of the Iroha Database API & CLI Tool,
+# and is released under the "MIT License Agreement". Please see the LICENSE
+# file that should have been included as part of this package.
+
 main_options = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, "exit"]
 
 command_options = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
