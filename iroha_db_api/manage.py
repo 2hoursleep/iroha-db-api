@@ -10,20 +10,9 @@ import unittest
 import sys
 
 import schedule
-import coverage
+
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
-
-COV = coverage.coverage(
-    branch=True,
-    include="project/*",
-    omit=[
-        "project/tests/*",
-        "project/server/config.py",
-        "project/server/*/__init__.py",
-    ],
-)
-COV.start()
 
 import schedule
 from project.server import app, db, models
@@ -31,6 +20,9 @@ from project.utils import _print, click
 from project.utils.cli_menu import main_menu
 from project.utils.functions import IrohaBlockAPI
 from project.utils.menu_text import welcome_msg
+
+
+migrate = Migrate(app, db)
 
 
 @click.group()
@@ -43,7 +35,7 @@ def cli():
     "-a",
     "--account_id",
     type=str,
-    envvar="IROHA_ACCOUNT_ID",
+    envvar="IROHA_USER",
     help="your Iroha Account ID including Domain Name \n e.g: 2hoursleep@iroha",
 )
 @click.option(
@@ -72,11 +64,9 @@ def main(account_id, iroha_host, private_key):
             rel_path = f"{account_id}.priv"
             private_key_file = os.path.join(script_dir, rel_path)
             private_key = open(private_key_file, "rb+").read()
-        except:
-            private_key = os.getenv(
-                "IROHA_DB_API_SECRET",
-                "164879bd94411cb7c88308b6423f7dde1e6df19a98961c8aebf7d70990ade5b7",
-            )
+        except FileNotFoundError:
+            _print("Private key not found")
+            sys.exit()
     try:
         iroha_api = IrohaBlockAPI(
             api_user=account_id, private_key=private_key, iroha_host=iroha_host
@@ -134,7 +124,7 @@ def drop_db():
     "-a",
     "--account_id",
     type=str,
-    envvar="IROHA_ACCOUNT_ID",
+    envvar="IROHA_USER",
     help="Iroha Account ID including Domain Name \n e.g: admin@test",
 )
 @click.option(
@@ -148,7 +138,7 @@ def drop_db():
 @click.option(
     "-pk",
     "--private_key",
-    envvar="IROHA_DB_API_SECRET",
+    envvar="IROHA_API_SECRET",
     type=str,
     help="Iroha private key",
 )
@@ -158,9 +148,8 @@ def drop_db():
     type=int,
     help="Port to run API on default 5000",
 )
-def start_api(account_id: str, iroha_host, private_key, timer):
+def start_api(account_id: str, iroha_host, private_key):
     """Starts REST API"""
-
     if not account_id:
         account_id = click.prompt("Please enter the API AccountID e.g. admin@test")
     if not private_key:
@@ -171,17 +160,10 @@ def start_api(account_id: str, iroha_host, private_key, timer):
             private_key = open(private_key_file, "rb+").read()
             os.environ["IROHA_DB_API_SECRET"] = private_key
         except FileNotFoundError:
-            _print("Private key file not found")
-            if account_id == "admin@test":
-                _print(
-                    "Default account admin@test deteced. \nAttempting to start with dummy key"
-                )
-                _print("[bold red]IF ERRORS OCCUR PLEASE VALIDE CREDENTIALS[/bold red]")
-                os.environ[
-                    "IROHA_DB_API_SECRET"
-                ] = "164879bd94411cb7c88308b6423f7dde1e6df19a98961c8aebf7d70990ade5b7"
-
-        app.run()
+            _print("[bold red]Private key file not found[/bold red]")
+            sys.exit()
+    os.environ["IROHA_HOST"] = iroha_host
+    app.run()
 
 
 @cli.command(name="worker")
@@ -189,7 +171,7 @@ def start_api(account_id: str, iroha_host, private_key, timer):
     "-a",
     "--account_id",
     type=str,
-    envvar="IROHA_ACCOUNT_ID",
+    envvar="IROHA_USER",
     help="Iroha Account ID including Domain Name \n e.g: 2hoursleep@iroha",
 )
 @click.option(
@@ -203,19 +185,20 @@ def start_api(account_id: str, iroha_host, private_key, timer):
 @click.option(
     "-pk",
     "--private_key",
-    envvar="IROHA_DB_API_SECRET",
+    envvar="IROHA_API_SECRET",
     type=str,
     help="Private key",
 )
 @click.option(
     "-t",
     "--timer",
-    envvar="IROHA_DB_CRON",
+    envvar="API_DB_CRON",
     type=int,
     help="Cron worker frequency",
 )
 def start_worker(account_id: str, iroha_host: str, private_key: str, timer):
     """Starts DB Cronjob Worker"""
+
     if not account_id:
         account_id = click.prompt("Please enter the API AccountID e.g. admin@test")
     if not private_key:
@@ -231,17 +214,11 @@ def start_worker(account_id: str, iroha_host: str, private_key: str, timer):
                 f"Please enter private key for AccountID: {account_id}"
             )
             if not private_key:
-                use_demo_key = click.prompt(
-                    f"Do you want to use the demo private key for: {account_id}?"
-                )
-                if str(use_demo_key).lower() == "y":
-                    private_key = "164879bd94411cb7c88308b6423f7dde1e6df19a98961c8aebf7d70990ade5b7"
-                else:
-                    _print("Exiting...\nPlease set all required params and restart.")
-                    sys.exit()
+                _print("Exiting...\nPlease set all required params and restart.")
+                sys.exit()
     if not timer:
         timer = click.prompt("Block Parser Cron Job in Minutes")
-        os.environ["IROHA_DB_CRON"] = timer
+        os.environ["API_DB_CRON"] = timer
     try:
         timer = int(timer)
         iroha_api = IrohaBlockAPI(
@@ -249,8 +226,8 @@ def start_worker(account_id: str, iroha_host: str, private_key: str, timer):
         )
         _print(f"Current Iroha WSV Height: {iroha_api.get_wsv_height()}")
         schedule.every(timer).minutes.do(iroha_api.cron_block_parser)
-    except:
-        raise
+    except Exception:
+        _print(Exception)
 
     worker_active = True
     while worker_active:

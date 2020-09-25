@@ -8,8 +8,20 @@ services:
     environment:
       - FLASK_APP=manage.py
       - FLASK_DEBUG=1
-      - IROHA_ACCOUNT_ID=admin@test
-      - IROHA_HOST=localhost:50051
+      - IROHA_WSV_DB=${IROHA_WSV_DB}
+      - IROHA_WSV_DB_HOST=${IROHA_WSV_DB_HOST}
+      - IROHA_WSV_DB_PORT=${IROHA_WSV_DB_PORT}
+      - IROHA_WSV_DB_USER=${IROHA_WSV_DB_USER}
+      - IROHA_WSV_DB_PASSWORD=${IROHA_WSV_DB_PASSWORD}
+      - IROHA_USER=${IROHA_USER}
+      - IROHA_HOST=${IROHA_HOST}
+      - API_DB=${API_DB}
+      - API_DB_HOST=${API_DB_HOST}
+      - API_DB_PORT=${API_DB_PORT}
+      - API_DB_USER=${API_DB_USER}
+      - API_DB_PASSWORD=${API_DB_PASSWORD}
+      - API_DB_CRON=${API_DB_CRON}
+      - API_SECRET=${API_SECRET}
       - 'RUN=flask run --host=0.0.0.0 --port=5000'
     command: flask run --host=0.0.0.0 --port=5000
     # Infinite loop, to keep it alive, for debugging
@@ -18,7 +30,17 @@ services:
     volumes:
       - ./iroha_db_api:/app
     environment:
-      - IROHA_DB_CRON=2
-      - IROHA_ACCOUNT_ID=admin@test
-      - IROHA_HOST=localhost:50051
+      - IROHA_WSV_DB=${IROHA_WSV_DB}
+      - IROHA_WSV_DB_HOST=${IROHA_WSV_DB_HOST}
+      - IROHA_WSV_DB_PORT=${IROHA_WSV_DB_PORT}
+      - IROHA_WSV_DB_USER=${IROHA_WSV_DB_USER}
+      - IROHA_WSV_DB_PASSWORD=${IROHA_WSV_DB_PASSWORD}
+      - IROHA_USER=${IROHA_USER}
+      - IROHA_HOST=${IROHA_HOST}
+      - API_DB=${API_DB}
+      - API_DB_HOST=${API_DB_HOST}
+      - API_DB_PORT=${API_DB_PORT}
+      - API_DB_USER=${API_DB_USER}
+      - API_DB_PASSWORD=${API_DB_PASSWORD}
+      - API_DB_CRON=${API_DB_CRON}
     command: python3 manage.py worker

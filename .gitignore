@@ -9,9 +9,10 @@ __pycache__/
 # Keys
 /backup
 /keys
-/iroha
 /scripts
 
+.directory
+.vscode
 
 # Distribution / packaging
 .Python

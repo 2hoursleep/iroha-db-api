@@ -8,22 +8,41 @@ import os
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 # SQL Alchemy Driver; Postgres is being used
+
+# API Db
 postgres_local_base = "postgresql://postgres:docker@localhost:5433/"
 # Change Database Name Here
 database_name = "iroha_blocks_db"
 
-IROHA_WSV_DB_URI = "postgresql://postgres:mysecretpassword@localhost:5432/iroha_data"
+api_db_pwd = os.getenv("API_DB_PASSWORD")
+api_user_id = os.getenv("API_DB_USER")
+
+api_db_host = os.getenv("API_DB_HOST")
+api_db_port = os.getenv("API_DB_PORT")
+api_db_name = os.getenv("API_DB")
+
+API_DB_URI = (
+    f"postgresql://{api_user_id}:{api_db_pwd}@{api_db_host}:{api_db_port}/{api_db_name}"
+)
+
+
+wsv_pwd = os.getenv("IROHA_WSV_DB_PASSWORD")
+user_id = os.getenv("IROHA_WSV_DB_USER")
+
+wsv_host = os.getenv("IROHA_WSV_DB_HOST")
+wsv_port = os.getenv("IROHA_WSV_DB_PORT")
+wsv_db = os.getenv("IROHA_WSV_DB")
+
+IROHA_WSV_DB_URI = f"postgresql://{user_id}:{wsv_pwd}@{wsv_host}:{wsv_port}/{wsv_db}"
 
 
 class BaseConfig:
     """Base configuration."""
 
-    SECRET_KEY = os.getenv("SECRET_KEY", "my_precious")
+    SECRET_KEY = os.getenv("API_SECRET_KEY", "my_precious")
     DEBUG = False
     BCRYPT_LOG_ROUNDS = 13
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", "./")
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024
 
 
 class DevelopmentConfig(BaseConfig):
@@ -31,7 +50,7 @@ class DevelopmentConfig(BaseConfig):
 
     DEBUG = True
     BCRYPT_LOG_ROUNDS = 4
-    SQLALCHEMY_DATABASE_URI = postgres_local_base + database_name
+    SQLALCHEMY_DATABASE_URI = API_DB_URI
     SQLALCHEMY_BINDS = {"api": SQLALCHEMY_DATABASE_URI, "iroha_wsv": IROHA_WSV_DB_URI}
 
 

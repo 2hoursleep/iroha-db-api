@@ -19,17 +19,15 @@ services:
     volumes: 
       - iroha-db-block-data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_PASSWORD=docker
-      - POSTGRES_USER=postgres
-      - POSTGRES_DB=iroha_blocks_db
+      - POSTGRES_PASSWORD=${API_DB_USER}
+      - POSTGRES_USER=${API_DB_USER}
+      - POSTGRES_DB=${API_DB}
     network_mode: host
-    expose:
-    - "5433"
     ports:
-    - "5433:5433"
+    - "${API_DB_PORT}:${API_DB_PORT}"
     logging:
       driver: none
-    command: -p 5433
+    command: -p ${API_DB_PORT}
 
 volumes:
   iroha-db-block-data:

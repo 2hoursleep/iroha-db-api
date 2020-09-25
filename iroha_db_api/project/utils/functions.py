@@ -33,9 +33,7 @@ class IrohaBlockAPI:
         self.api_user = api_user
         self.iroha_host = iroha_host
         self.iroha_block_api = IrohaBlockClient(
-            creator_account=api_user,
-            private_key=private_key,
-            iroha_host=iroha_host,
+            creator_account=api_user, private_key=private_key, iroha_host=iroha_host
         )
 
     @huey.task()
@@ -105,20 +103,6 @@ class IrohaBlockAPI:
                 "[bold red]Genesis Block already exists or cannot connect to Iroha[/bold red]"
             )
 
-    def run_block_paser(self, scan_range: int = 100):
-        # get last block from db if none start from 1
-        try:
-            huey.start()
-            last_block = Block_V1.get_last_block()
-            last_height = last_block["height"]
-            if last_height:
-                self.block_parser(last_height, scan_range)
-        except:
-            _print(f"[bold red]Unable to get block from db[/bold red]")
-            raise
-        finally:
-            huey.stop()
-
     def block_parser(self, last_height: int, scan_range: int = 100):
         curent_height = last_height + 1
         end_height = curent_height + scan_range
@@ -175,8 +159,7 @@ class IrohaBlockAPI:
             db_last_block = Block_V1.get_last_block()
             db_last_height = db_last_block["height"]
         except Exception as error:
-            _print(error)
-            _print("Adding Genesis block")
+            _print("No blocks found in db. \nAdding Genesis block")
             self.parse_genesis_iroha_block_to_db()
         finally:
             db_last_block = Block_V1.get_last_block()
